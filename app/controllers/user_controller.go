@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 	"went-template/app/models"
 	"went-template/internal/responses"
@@ -44,8 +45,16 @@ func (uc *UserController) GetAllUsers(c *gin.Context) {
 func (uc *UserController) GetUserByID(c *gin.Context) {
 	var user models.User
 	id := c.Param("id")
+	if id == "" {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{Error: "ID parameter is required"})
+		return
+	}
 	if err := uc.DB.First(&user, id).Error; err != nil {
-		c.JSON(http.StatusNotFound, responses.ErrorResponse{Error: "User not found"})
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Error: "User not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error()})
+		}
 		return
 	}
 	c.JSON(http.StatusOK, user)
@@ -122,21 +131,22 @@ func (uc *UserController) UpdateUser(c *gin.Context) {
 
 // DeleteUser deletes a user from the database.
 // @Summary Delete a user
-// @Description Delete a user by their ID
-// @Tags users
-// @Accept json
-// @Produce json
-// @Param id path int true "User ID"
-// @Success 200 {object} responses.SuccessResponse
-// @Failure 404 {object} responses.ErrorResponse
-// @Failure 500 {object} responses.ErrorResponse
-// @Router /users/{id} [delete]
 func (uc *UserController) DeleteUser(c *gin.Context) {
 	var user models.User
 	id := c.Param("id")
 
+	// Validate ID parameter
+	if id == "" {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{Error: "ID parameter is required"})
+		return
+	}
+
 	if err := uc.DB.First(&user, id).Error; err != nil {
-		c.JSON(http.StatusNotFound, responses.ErrorResponse{Error: "User not found"})
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Error: "User not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error()})
+		}
 		return
 	}
 

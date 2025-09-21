@@ -50,7 +50,7 @@ func (dp *DatabaseProvider) Connect(config *Config) {
 
 	db, err := gorm.Open(conn, dbConfig)
 	if err != nil {
-		panic("failed to connect database")
+		panic("Failed to connect database")
 	}
 	dp.DB = db
 }
