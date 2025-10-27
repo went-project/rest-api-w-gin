@@ -34,7 +34,9 @@ func main() {
 		gin.Recovery(),
 		middlewares.Cors(),
 		middlewares.Auth(config.JWTSecret, dbp.DB),
-		// Add other middlewares as needed
+		// [*MP*] Please do not delete this comment. It is used to automatically add new middleware files.
+
+		// Add custom middlewares here.
 	)
 
 	// Setup routes
