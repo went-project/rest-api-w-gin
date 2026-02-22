@@ -62,6 +62,10 @@ func (u *User) FindAll(db *gorm.DB, where map[string]interface{}) ([]User, error
 	return users, err
 }
 
+func (u *User) FindByID(db *gorm.DB, id interface{}) error {
+	return db.First(u, id).Error
+}
+
 func (u *User) Create(db *gorm.DB) error {
 	return db.Create(u).Error
 }

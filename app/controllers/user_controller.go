@@ -24,8 +24,9 @@ type UserController struct {
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /users [get]
 func (uc *UserController) GetAllUsers(c *gin.Context) {
-	var users []models.User
-	if err := uc.DB.Find(&users).Error; err != nil {
+	var user models.User
+	users, err := user.FindAll(uc.DB, map[string]interface{}{})
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error()})
 		return
 	}
@@ -49,7 +50,7 @@ func (uc *UserController) GetUserByID(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, responses.ErrorResponse{Error: "ID parameter is required"})
 		return
 	}
-	if err := uc.DB.First(&user, id).Error; err != nil {
+	if err := user.FindByID(uc.DB, id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, responses.ErrorResponse{Error: "User not found"})
 		} else {
@@ -83,7 +84,7 @@ func (uc *UserController) CreateUser(c *gin.Context) {
 		return
 	}
 
-	if err := uc.DB.Create(&user).Error; err != nil {
+	if err := user.Create(uc.DB); err != nil {
 		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error()})
 		return
 	}
@@ -107,7 +108,7 @@ func (uc *UserController) UpdateUser(c *gin.Context) {
 	var user models.User
 	id := c.Param("id")
 
-	if err := uc.DB.First(&user, id).Error; err != nil {
+	if err := user.FindByID(uc.DB, id); err != nil {
 		c.JSON(http.StatusNotFound, responses.ErrorResponse{Error: "User not found"})
 		return
 	}
@@ -122,7 +123,7 @@ func (uc *UserController) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	if err := uc.DB.Save(&user).Error; err != nil {
+	if err := user.Update(uc.DB); err != nil {
 		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error()})
 		return
 	}
@@ -141,7 +142,7 @@ func (uc *UserController) DeleteUser(c *gin.Context) {
 		return
 	}
 
-	if err := uc.DB.First(&user, id).Error; err != nil {
+	if err := user.FindByID(uc.DB, id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, responses.ErrorResponse{Error: "User not found"})
 		} else {
@@ -150,7 +151,7 @@ func (uc *UserController) DeleteUser(c *gin.Context) {
 		return
 	}
 
-	if err := uc.DB.Delete(&user).Error; err != nil {
+	if err := user.Delete(uc.DB); err != nil {
 		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Error: err.Error()})
 		return
 	}
